@@ -28,6 +28,17 @@ def allmax(iterable, key=None):
     return result
 
 
+count_rankings = {
+    (5,): 10,  # 5 of a kind
+    (4, 1): 7,  # 4 of a kind
+    (3, 2): 6,  # full house
+    (3, 1, 1): 3,  # 3 of a kind
+    (2, 2, 1): 2,  # 2 pair
+    (2, 1, 1, 1): 1,  # 1 pair
+    (1, 1, 1, 1, 1): 0,  # high card
+}
+
+
 def hand_rank(hand):
     """Return a velue indicating how high the hand ranks."""
     groups = group(['--23456789TJQKA'.index(rank) for rank, _ in hand])
@@ -36,19 +47,11 @@ def hand_rank(hand):
         ranks = (5, 4, 3, 2, 1)
     straight = len(ranks) == 5 and max(ranks) - min(ranks) == 4
     flush = len(set([suit for _, suit in hand])) == 1
-    return (9 if (5,) == counts else  # 5 of a kind
-            8 if straight and flush else  # straight flush
-            7 if (4, 1) == counts else  # 4 of a kind
-            6 if (3, 2) == counts else  # full house
-            5 if flush else  # flush
-            4 if straight else  # straight
-            3 if (3, 1, 1) == counts else  # 3 of a kind
-            2 if (2, 2, 1) == counts else  # 2 pair
-            1 if (2, 1, 1, 1) == counts else  # kind
-            0), ranks  # high card
+    return max(count_rankings.get(counts), 4 * straight + 5 * flush), ranks
 
 
 def group(items):
-    """Return a list of [(count, x)...], highest count first, then highest x first."""
+    """Return a list of [(count, x)...], highest count first,
+    then highest x first."""
     groups = [(items.count(x), x) for x in set(items)]
     return sorted(groups, reverse=True)
